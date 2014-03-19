@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+
+<script>(function() {
+
+
+	var _init = false;
+	var _config = {
+		css: "color:#000;background-color:red;font-weight:bolder;font-size:90px",
+		msg: "DESATIVADO"
+	};
+
+
+	var desativaConsoleDevToolsChrome = {
+		config: _config,
+		timer: 0,
+		pisca: function(msg) {			
+			var that = this;
+			clearInterval(this.timer);
+			var cont = 0;
+			this.timer = setInterval(function() {
+				if ((++cont % 2) == 0) {
+					setTimeout(Function.prototype.apply.bind(console.log, console, msg), 1);
+				} else {
+					that.injectedScriptHost.clearConsoleMessages();
+				}
+			}, 300);
+		},
+
+		desativa: function() {
+			var that = this;
+			var msg = ["%c" + this.config.msg, this.config.css];
+			this.injectedScript._inspect = function(){
+				alert(that.config.msg);
+			};
+			Object.defineProperty(this.injectedScriptHost, 'evaluate', {
+				get: function() {
+					return function() {
+						that.pisca(msg);
+						return "";
+					}
+				}
+			});
+		},
+
+		init: function(config) {
+			var that = this;
+			this.config.css = config.css || _config.css;
+			this.config.msg = config.msg || _config.msg;
+			Object.defineProperty(console, '_commandLineAPI', {
+				get: function() {
+					if (!_init) {
+						_init = true;
+						that.injectedScriptHost = arguments.callee.caller.arguments[1];
+						that.injectedScript = that.injectedScriptHost.functionDetails(arguments.callee.caller.arguments.callee).rawScopes[0].object.injectedScript;
+						that.desativa();
+					}
+				}
+			});
+
+		}
+
+	};
+
+	desativaConsoleDevToolsChrome.init( {
+		css: "color:green;background-color:red;font-weight:bolder;font-size:90px",
+		msg: "fdfdfdfdf"
+	});
+	 
+
+})();
+/*
+  (function() {
+ 	var _cont = 0;
+ 	try {
+ 	Object.defineProperty(console, '_commandLineAPI', {
+ 	 
+ 	get: function() {  
+  var InjectedScriptHost = arguments.callee.caller.arguments[1];
+  var injectedScript = InjectedScriptHost.functionDetails(arguments.callee.caller.arguments.callee).rawScopes[0].object.injectedScript;
+
+
+
+ 	  //injectedScript._inspect = function(){alert("?");}
+ 	  var msg = ["%c  DESATIVADO   :( ", "color:#000;background-color:red;font-weight:bolder;font-size:90px"];
+ 	_cont++;
+ 	if (_cont == 2) {
+ 		setTimeout(function(){
+	setTimeout(Function.prototype.apply.bind(console.log, console, msg), 1);
+ 	//setTimeout(InjectedScriptHost.clearConsoleMessages.bind(InjectedScriptHost), 300);
+ },400);
+ 
+ 	return;
+ 	}
+
+
+
+ 
+
+InjectedScriptHost.inspectedObject(0);
+
+
+
+
+ 	throw Array(_cont).join("?");
+ 	return null;
+ 	}
+ 	});
+ 	} catch (e) {}
+ })();
+*/
+
+</script>
+
+</head>
+<body>
+	
+</body>
+</html>
+ 
