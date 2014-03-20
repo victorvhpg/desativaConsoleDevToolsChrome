@@ -4,14 +4,14 @@ https://github.com/victorvhpg/desativaConsoleDevToolsChrome
 19/03/2014
 
 
-para desativar podemos apenas fazer isso:
-    Object.defineProperty(console, '_commandLineAPI', {
+//para desativar podemos apenas fazer isso: //versao <= 33 do chrome 
+    Object.defineProperty(console, "_commandLineAPI", {
         get: function () {
             throw "Desativado";
         }
     });
 
-mas podemos fazer algo mais legal neh... 
+ 
 
 */
 (function(window) {
@@ -54,18 +54,36 @@ mas podemos fazer algo mais legal neh...
             });
         },
 
+        initDesativa: function(c) {
+            if (!_init) {
+                Function.prototype.call = c;
+                _init = true;
+                this.injectedScriptHost = arguments.callee.caller.arguments[0];
+                //console.log(arguments.callee.caller.arguments.callee.caller.arguments.callee)
+                this.injectedScript = this.injectedScriptHost.functionDetails(arguments.callee.caller.arguments.callee.caller.arguments.callee).rawScopes[0].object.injectedScript;
+                this.desativa();
+            }
+        },
+
         init: function(config) {
             var that = this;
             this.config.css = config.css || _config.css;
             this.config.msg = config.msg || _config.msg;
-            Object.defineProperty(console, '_commandLineAPI', {
+            //para versao > 33 do chrome 
+            // por enquanto fazendo gambiarra sobreescrevendo metodo nativo .call :(
+            //testado ate  versao 35.0.1899.0 canary
+            var call = Function.prototype.call;
+            Function.prototype.call = function(thisObj) {
+                if (arguments.length > 0 && this.name === "evaluate") {
+                    that.initDesativa(call);
+                }
+                return call.apply(this, call.apply([].slice, [arguments]));
+            };
+
+            //para versao <= 33  do chrome 
+            Object.defineProperty(console, "_commandLineAPI", {
                 get: function() {
-                    if (!_init) {
-                        _init = true;
-                        that.injectedScriptHost = arguments.callee.caller.arguments[1];
-                        that.injectedScript = that.injectedScriptHost.functionDetails(arguments.callee.caller.arguments.callee).rawScopes[0].object.injectedScript;
-                        that.desativa();
-                    }
+                    that.initDesativa(call);
                 }
             });
         }
