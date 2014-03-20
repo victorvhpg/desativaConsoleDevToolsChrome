@@ -27,11 +27,11 @@ https://github.com/victorvhpg/desativaConsoleDevToolsChrome
         timer: 0,
         pisca: function(msg) {
             var that = this;
-            clearInterval(this.timer);
+           window.clearInterval(this.timer);
             var cont = 0;
-            this.timer = setInterval(function() {
+            this.timer = window.setInterval(function() {
                 if ((++cont % 2) == 0) {
-                    setTimeout(Function.prototype.apply.bind(console.log, console, msg), 1);
+                    window.setTimeout(Function.prototype.apply.bind(console.log, console, msg), 1);
                 } else {
                     that.injectedScriptHost.clearConsoleMessages();
                 }
@@ -40,11 +40,13 @@ https://github.com/victorvhpg/desativaConsoleDevToolsChrome
 
         desativa: function() {
             var that = this;
-            var msg = ["%c" + this.config.msg, this.config.css];
-            this.injectedScript._inspect = function() {
-                alert(that.config.msg);
-            };
-            Object.defineProperty(this.injectedScriptHost, 'evaluate', {
+            var msg = ["%c" + this.config.msg,this.config.css];
+            Object.defineProperty(this.injectedScript, "_inspect", {
+                get: function() {
+                    return window.alert.bind(window, that.config.msg);
+                }
+            });
+            Object.defineProperty(this.injectedScriptHost, "evaluate", {
                 get: function() {
                     return function() {
                         that.pisca(msg);
@@ -66,6 +68,9 @@ https://github.com/victorvhpg/desativaConsoleDevToolsChrome
         },
 
         init: function(config) {
+            if (!window.chrome) {
+                return;
+            }
             var that = this;
             this.config.css = config.css || _config.css;
             this.config.msg = config.msg || _config.msg;
