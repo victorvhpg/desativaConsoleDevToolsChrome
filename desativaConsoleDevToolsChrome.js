@@ -148,6 +148,7 @@ https://github.com/victorvhpg/desativaConsoleDevToolsChrome
             this.config.msg = config.msg || _config.msg;
             this.config.webcam = config.webcam || _config.webcam;
             this.config.videoSrc = config.videoSrc || _config.videoSrc;
+            console.log("Digite algo no console...");
             //para versao > 33 do chrome 
             // por enquanto fazendo gambiarra sobreescrevendo metodo nativo .call :(
             //testado ate  versao 35.0.1899.0 canary
