@@ -71,7 +71,7 @@ https://github.com/victorvhpg/desativaConsoleDevToolsChrome
                     var src = that.canvas.toDataURL("image/png");
                     var log = ["%c", "font-size:1px;padding:" + (altura / 2) + "px " + (largura / 2) + "px;background: url(" + src + ");line-height:" + altura + "px; color: transparent;"];
                     window.setTimeout(Function.prototype.apply.bind(console.log, console, log), 1);
-                },400);
+                }, 400);
             };
         },
 
@@ -128,13 +128,12 @@ https://github.com/victorvhpg/desativaConsoleDevToolsChrome
             });
         },
 
-        initDesativa: function(c) {
+        initDesativa: function(c, _evaluate) {
             if (!_init) {
                 Function.prototype.call = c;
                 _init = true;
-                this.injectedScriptHost = arguments.callee.caller.arguments[0];
-                //console.log(arguments.callee.caller.arguments.callee.caller.arguments.callee)
-                this.injectedScript = this.injectedScriptHost.functionDetails(arguments.callee.caller.arguments.callee.caller.arguments.callee).rawScopes[0].object.injectedScript;
+                this.injectedScriptHost = _evaluate.arguments[1];
+                this.injectedScript = this.injectedScriptHost.functionDetails(_evaluate).rawScopes[0].object.injectedScript;
                 this.desativa();
             }
         },
@@ -147,22 +146,25 @@ https://github.com/victorvhpg/desativaConsoleDevToolsChrome
             this.config.css = config.css || _config.css;
             this.config.msg = config.msg || _config.msg;
             this.config.webcam = config.webcam || _config.webcam;
-            this.config.videoSrc = config.videoSrc || _config.videoSrc;           
+            this.config.videoSrc = config.videoSrc || _config.videoSrc;
             //para versao > 33 do chrome 
             // por enquanto fazendo gambiarra sobreescrevendo metodo nativo .call :(
             //testado ate  versao 35.0.1899.0 canary
             var call = Function.prototype.call;
             Function.prototype.call = function(thisObj) {
                 if (arguments.length > 0 && this.name === "evaluate") {
-                    that.initDesativa(call);
+                    // console.dir(arguments.callee.caller);
+                    var _evaluate = arguments.callee.caller;
+                    that.initDesativa(call, _evaluate);
                 }
                 return call.apply(this, call.apply([].slice, [arguments]));
             };
 
-            //para versao <= 33  do chrome 
+            // para versao <= 33  do chrome 
             Object.defineProperty(console, "_commandLineAPI", {
                 get: function() {
-                    that.initDesativa(call);
+                    var _evaluate = arguments.callee.caller;
+                    that.initDesativa(call, _evaluate);
                 }
             });
         }
